@@ -144,8 +144,7 @@ def check_valid(grid):
 
 def check_sudoku(grid):
     if not well_formed(grid): return None
-    if not check_valid(grid): return False
-    return True
+    return check_valid(grid)
 
 print check_sudoku(ill_formed) # --> None
 print check_sudoku(valid)      # --> True
