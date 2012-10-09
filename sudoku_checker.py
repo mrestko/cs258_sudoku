@@ -146,8 +146,85 @@ def check_sudoku(grid):
     if not well_formed(grid): return None
     return check_valid(grid)
 
+def full(grid):
+	return 0 not in [num for row in grid for num in row]
+
+def coord_next_empty(grid):
+	for row_idx in range(9):
+		for col_idx in range(9):
+			if grid[row_idx][col_idx] == 0:
+				return (row_idx, col_idx)
+
+def get_col(grid, col):
+	vals = []
+	for row in range(9):
+		vals.append(grid[row][col])
+	return vals
+
+def get_sub(grid, coords):
+	c_row, c_col = coords
+	# integer division and multiplication to compute
+	# the start index of the sub box
+	s_row = (c_row / 3) * 3
+	s_col = (c_col / 3) * 3
+	vals = []
+	for i in range(3):
+		for j in range(3):
+			vals.append(grid[s_row + i][s_col + j])
+	return vals
+
+def valid_for_next_empty(grid):
+	next_empty = coord_next_empty(grid)
+	in_row = set(grid[next_empty[0]])
+	in_col = set(get_col(grid, next_empty[1]))
+	in_sub = set(get_sub(grid, next_empty))
+	return set(range(1, 10)).difference(in_row, in_col, in_sub)
+
+def rep_next(grid, val):
+	'''Returns new grid with val replacing the first blank'''
+	new = [row[:] for row in grid]
+	for i in range(9):
+		for j in range(9):
+			if new[i][j] == 0:
+				new[i][j] = val
+				return new
+def pp(grid):
+	pretty = ""
+	for i,row in enumerate(grid):
+		if i % 3 == 0 and i != 0:
+			pretty += "---+---+---\n"
+		for j,col in enumerate(row):
+			if j % 3 == 0 and j != 0:
+				pretty += "|"
+			pretty += str(col)
+		pretty += "\n"
+	print pretty
+
+		
+def solve_sudoku(grid):
+	if not well_formed(grid): return None
+	if full(grid): 
+		check = check_valid(grid)
+		return grid if check else check
+	next_vals = valid_for_next_empty(grid)
+	if next_vals == None: return False
+	for val in next_vals:
+		test = rep_next(grid, val)
+		result = solve_sudoku(test)
+		if result not in [False, None]: return result
+
+
 print check_sudoku(ill_formed) # --> None
 print check_sudoku(valid)      # --> True
 print check_sudoku(invalid)    # --> False
 print check_sudoku(easy)       # --> True
 print check_sudoku(hard)       # --> True
+
+print "----Testing Solve---"
+print "solve_sudoku(ill_formed):"
+print solve_sudoku(ill_formed)
+
+print "----solving easy----"
+pp(solve_sudoku(easy))
+print "----solving hard----"
+pp(solve_sudoku(hard))
